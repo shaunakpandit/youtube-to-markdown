@@ -1,29 +1,30 @@
-# Use an official Python image as the base
+# Use a lightweight Python image
 FROM python:3.9-slim
 
-# Set environment variables
-ENV PYTHONUNBUFFERED=1
-ENV PATH /app:$PATH
+# Set environment variables to avoid prompts during builds
+ENV DEBIAN_FRONTEND=noninteractive
 
-# Install system dependencies needed for GUI (like PyQt5)
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
-
-# Create and set the working directory
+# Set the working directory
 WORKDIR /app
 
-# Copy requirements first to leverage Docker cache
-COPY requirements.txt .
+# Install system dependencies required to build PyQt5
+# qmake and other build tools come with `qtbase5-dev` and `build-essential`
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    qtbase5-dev \
+    build-essential \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
+# Copy the application files to the container
+COPY . /app
+
+# Upgrade pip and ensure wheel is installed, then install Python dependencies
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application
-COPY . .
-
-# Expose the necessary ports (if any, like for GUI)
+# Expose a port (optional, for future purposes)
 EXPOSE 8080
 
-# Command to run the application
+# Set the default command to run the application
 CMD ["python", "main.py"]

@@ -1,26 +1,16 @@
-version: '3'
+version: "3.8"
 
 services:
-  youtube-downloader:
+  youtube-playlist-processor:
     build:
       context: .
-      dockerfile: Dockerfile  # Path to your Dockerfile if it's in the same directory
+      dockerfile: Dockerfile
+    container_name: youtube-processor
     ports:
-      - "8080:8080"           # Maps port 8080 of the container to the host machine
-    environment:
-      - PYTHONUNBUFFERED=1    # Ensures unbuffered Python output, useful for logging
+      - "8080:8080" # Not necessary for GUI but can be removed/adjusted if needed
     volumes:
-      - /tmp/.X11-unix:/tmp/.X11-unix   # Mounts X11 socket for GUI applications
-      - ./Images:/app/Images  # mounts the Images directory if needed by the application
-    networks:
-      - app_network           # Connects to a custom network (optional)
-    stdin_open: true          # Allows input via standard input
-    tty: true                 # Allocates a TTY for interactive sessions
-
-volumes:
-  data_volume:
-    driver: local            # Optional volume configuration
-
-networks:
-  app_network:
-    driver: bridge           # Uses the bridge network driver (optional)
+      - ./output:/app/output # Bind volume for saving outputs to host
+    environment:
+      GEMINI_API_KEY: "YOUR_GEMINI_API_KEY_HERE" # Set your API Key in .env or replace this line
+    stdin_open: true
+    tty: true
